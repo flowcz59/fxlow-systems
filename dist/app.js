@@ -10,6 +10,7 @@
     toast.classList.add('visible');
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
   }
+  document.addEventListener('portfolio:notify', event => notify(event.detail));
   function setFocus(value, announce = false) {
     document.body.classList.toggle('focus-mode', value);
     $('#focus-toggle').setAttribute('aria-pressed', String(value));
@@ -42,59 +43,6 @@
     });
   }));
 
-  const colors = {
-    lime: {hex:'#e7fb70',label:'Citron électrique',short:'CITRON'},
-    lavender: {hex:'#c4b9fb',label:'Lavande curieuse',short:'LAVANDE'},
-    peach: {hex:'#ffac8c',label:'Corail spontané',short:'CORAIL'}
-  };
-  let color = 'lime';
-  let theme = 'light';
-  let tokenText;
-  function updatePlayground() {
-    const current = colors[color];
-    $('#lab-stage').style.setProperty('--accent', current.hex);
-    $('#lab-stage').dataset.theme = theme;
-    $('#color-name').textContent = current.label;
-    $('#lab-state').textContent = current.short + ' · ' + (theme === 'light' ? 'CLAIR' : 'SOMBRE');
-    tokenText = JSON.stringify({color:{accent:{$type:'color',$value:current.hex},surface:{$type:'color',$value:theme === 'light' ? '#ffffff' : '#30362e'}}}, null, 2);
-    $('#token-output').textContent = tokenText;
-    $$('.swatch').forEach(button => {
-      const selected = button.dataset.color === color;
-      button.classList.toggle('selected', selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
-    $$('.segmented button').forEach(button => {
-      const selected = button.dataset.theme === theme;
-      button.classList.toggle('selected', selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
-  }
-  $$('.swatch').forEach(button => button.addEventListener('click', () => { color = button.dataset.color; updatePlayground(); }));
-  $$('.segmented button').forEach(button => button.addEventListener('click', () => { theme = button.dataset.theme; updatePlayground(); }));
-  $('#demo-button').addEventListener('click', () => {
-    notify('Connexion établie. Le composant répond, le système suit.');
-    $('#demo-button').replaceChildren(document.createTextNode('Connexion établie '));
-    const tick = document.createElement('span'); tick.textContent = '✓'; tick.setAttribute('aria-hidden','true'); $('#demo-button').append(tick);
-    $('#demo-button').disabled = true;
-    setTimeout(() => {
-      $('#demo-button').replaceChildren(document.createTextNode('Tester le composant '));
-      const arrow = document.createElement('span'); arrow.textContent = '↗'; arrow.setAttribute('aria-hidden','true'); $('#demo-button').append(arrow);
-      $('#demo-button').disabled = false;
-    }, 2000);
-  });
-  $('#copy-token').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(tokenText);
-      notify('Tokens copiés. À vous de faire la prochaine connexion.');
-    } catch (_) {
-      const range = document.createRange();
-      range.selectNodeContents($('#token-output'));
-      const selection = window.getSelection();
-      selection.removeAllRanges(); selection.addRange(range);
-      notify('Sélection prête : utilisez Ctrl+C ou ⌘C pour copier les tokens.');
-    }
-  });
-  updatePlayground();
   // The platter accelerates smoothly; the leaf arm engages after it starts.
   const player = $('#vinyle');
   const disc = $('.record-disc');
