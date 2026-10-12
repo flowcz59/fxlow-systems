@@ -33,5 +33,5 @@
 .about-visual .orbit-word,.about-visual .about-note{pointer-events:none}
 .about-visual .orbit-three{bottom:56px}
 .focus-mode .record-arm{transform:rotate(-32deg)}
-@media(max-width:700px){.about-visual{height:350px}.record-player{width:290px}.about-visual .orbit-three{bottom:42px}.about-visual .orbit-two{right:0;top:38%}}
+@media(max-width:700px){.about-visual{height:350px}.record-player{width:290px}.about-visual .orbit-three{bottom:64px}.about-visual .orbit-two{right:0;top:8px}.about-visual .about-note{display:none}}
 @media(prefers-reduced-motion:reduce){.record-arm{transform:rotate(-32deg)!important}}
