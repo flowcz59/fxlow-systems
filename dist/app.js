@@ -24,9 +24,9 @@
   $('#focus-toggle').addEventListener('click', () => setFocus(!document.body.classList.contains('focus-mode'), true));
 
   const domains = {
-    design: ['01', 'Des interfaces sensibles.\nDes systèmes qui tiennent debout.'],
-    code: ['02', 'Du prototype au code de production.\nLes idées méritent de fonctionner.'],
-    ia: ['03', 'Des agents outillés. Des contrats clairs.\nEt toujours l’humain pour décider.']
+    design: ['f(x)', 'Une intention, des règles partagées.\nDes interfaces qui font sens.'],
+    code: ['f(x)', 'Des variables, une logique commune.\nL’idée devient un outil qui fonctionne.'],
+    ia: ['f(x)', 'Des possibles à explorer, un cadre explicite.\nEt toujours l’humain pour décider.']
   };
   $$('.idea-node').forEach(node => node.addEventListener('click', () => {
     $$('.idea-node').forEach(item => {

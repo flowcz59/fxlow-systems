@@ -60,7 +60,7 @@
     $('#contrast-result').title = 'Contraste du texte principal sur la couleur d’accent. AA pour du texte normal à partir de 4,5:1.';
     $('#chain-source').textContent = `palette.${state.accent}`;
     const tokens = {
-      $description:`Composition ${recipe || 'libre'} — mode ${state.mode}, Florian Cazé.`,
+      $description:`Composition ${recipe || 'libre'} — mode ${state.mode}, FXLOW — Florian Cazé.`,
       palette: {...Object.fromEntries(Object.entries(accents).map(([key,v])=>[key,colorToken(v.hex)])), ink:colorToken('#252720')},
       color: {accent:alias('color',`palette.${state.accent}`), 'on-accent':alias('color','palette.ink'), ...Object.fromEntries(Object.entries(mode).map(([key,value])=>[key,colorToken(value)]))},
       radius: {control:dimension(state.radius)},
@@ -74,7 +74,7 @@
       }
     };
     jsonText = JSON.stringify(tokens,null,2);
-    cssText = `/* Votre composition — ${recipe || 'mix libre'} / ${state.mode} */\n:root {\n${Object.entries(values).map(([key,value])=>`  --sys-${key}: ${value};`).join('\n')}\n}\n\n/* Les composants consomment les mêmes décisions. */\n.system-button {\n  background: var(--sys-accent);\n  color: var(--sys-on-accent);\n  border-radius: var(--sys-radius);\n}\n\n.system-card {\n  background: var(--sys-surface);\n  border-radius: var(--sys-radius);\n}\n\n.idea-content, .session-card, .note-card {\n  padding: var(--sys-space);\n}`;
+    cssText = `/* FXLOW / f(x) — ${recipe || 'mix libre'} / ${state.mode} */\n:root {\n${Object.entries(values).map(([key,value])=>`  --sys-${key}: ${value};`).join('\n')}\n}\n\n/* Les composants consomment les mêmes décisions. */\n.system-button {\n  background: var(--sys-accent);\n  color: var(--sys-on-accent);\n  border-radius: var(--sys-radius);\n}\n\n.system-card {\n  background: var(--sys-surface);\n  border-radius: var(--sys-radius);\n}\n\n.idea-content, .session-card, .note-card {\n  padding: var(--sys-space);\n}`;
     renderCode();
     if (message) $('#lab-signal-text').textContent=message;
   }
@@ -125,8 +125,8 @@
     if(inspect)$('#lab-inspect').click();
     if(saved)$('#save-idea').click();
     $$('[data-session-task]').forEach((input,i)=>input.checked=i<2);
-    $('#session-name').value='Connexions libres';
-    $('#session-caption').textContent='Connexions libres';
+    $('#session-name').value='Composition libre';
+    $('#session-caption').textContent='Composition libre';
     updateSession();
     update('Retour au Studio. Une nouvelle composition peut commencer.');
   });
@@ -143,7 +143,7 @@
   });
   $('#download-token').addEventListener('click',()=>{
     const url=URL.createObjectURL(new Blob([format==='json' ? jsonText : cssText],{type:format==='json' ? 'application/json' : 'text/css'}));
-    const link=document.createElement('a');link.href=url;link.download=`florian-caze-${selectedRecipe() || 'mix-libre'}-${state.mode}.${format==='json' ? 'tokens.json' : 'css'}`;
+    const link=document.createElement('a');link.href=url;link.download=`fxlow-${selectedRecipe() || 'mix-libre'}-${state.mode}.${format==='json' ? 'tokens.json' : 'css'}`;
     document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
   update();
