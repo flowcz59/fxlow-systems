@@ -95,4 +95,53 @@
     }
   });
   updatePlayground();
+  // The platter accelerates smoothly; the leaf arm engages after it starts.
+  const player = $('#vinyle');
+  const disc = $('.record-disc');
+  const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let playing = false, visible = false, entered = false;
+  let angle = 0, speed = 0, frame = 0, lastFrame = 0;
+  const motionAllowed = () => !motionPreference.matches && !document.body.classList.contains('focus-mode');
+  function syncPlayer() {
+    const allowed = motionAllowed();
+    if (!allowed) playing = false;
+    player.classList.toggle('is-playing', playing);
+    player.setAttribute('aria-pressed', String(playing));
+    player.setAttribute('aria-disabled', String(!allowed));
+    const label = !allowed ? 'Animation désactivée' : playing ? 'Mettre en pause' : 'Lancer le vinyle';
+    player.setAttribute('aria-label', label);
+    $('.record-action-label').textContent = label;
+    $('.record-action-icon').textContent = playing ? 'Ⅱ' : '▶';
+    if (!allowed) {
+      cancelAnimationFrame(frame); frame = 0; speed = 0; lastFrame = 0;
+    } else if (visible && !document.hidden && (playing || speed > .2) && !frame) {
+      lastFrame = 0; frame = requestAnimationFrame(turn);
+    }
+  }
+  function turn(now) {
+    frame = 0;
+    if (!visible || document.hidden || !motionAllowed()) { lastFrame = 0; return; }
+    const dt = lastFrame ? Math.min((now-lastFrame)/1000, .05) : 0;
+    lastFrame = now;
+    const target = playing ? 200 : 0; // 33⅓ rpm.
+    speed += (target-speed) * (1-Math.exp(-dt/(playing ? .65 : .9)));
+    angle = (angle + speed*dt) % 360;
+    disc.setAttribute('transform', `rotate(${angle} 160 175)`);
+    if (playing || speed > .2) frame = requestAnimationFrame(turn);
+    else { speed = 0; lastFrame = 0; }
+  }
+  player.addEventListener('click', () => {
+    if (!motionAllowed()) return;
+    playing = !playing;
+    syncPlayer();
+  });
+  new IntersectionObserver(entries => {
+    visible = entries[0].isIntersecting;
+    if (visible && !entered) { entered = true; playing = motionAllowed(); }
+    syncPlayer();
+  }, {threshold: .45}).observe(player);
+  motionPreference.addEventListener('change', syncPlayer);
+  new MutationObserver(syncPlayer).observe(document.body, {attributes:true, attributeFilter:['class']});
+  document.addEventListener('visibilitychange', syncPlayer);
+  syncPlayer();
 })();
