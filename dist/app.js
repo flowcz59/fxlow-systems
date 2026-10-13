@@ -11,18 +11,6 @@
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
   }
   document.addEventListener('portfolio:notify', event => notify(event.detail));
-  function setFocus(value, announce = false) {
-    document.body.classList.toggle('focus-mode', value);
-    $('#focus-toggle').setAttribute('aria-pressed', String(value));
-    $('#focus-label').textContent = value ? 'Focus activé' : 'Mode Focus';
-    if (announce) notify(value ? 'Mode Focus : les éléments s’alignent, les transitions s’arrêtent.' : 'Mode Exploration : les idées reprennent leur liberté.');
-    try { localStorage.setItem('florian-focus', String(value)); } catch (_) { /* Optional preference storage. */ }
-  }
-  let focus = false;
-  try { focus = localStorage.getItem('florian-focus') === 'true'; } catch (_) { /* Use default. */ }
-  setFocus(focus);
-  $('#focus-toggle').addEventListener('click', () => setFocus(!document.body.classList.contains('focus-mode'), true));
-
   const domains = {
     design: ['f(x)', 'Une intention, des règles partagées.\nDes interfaces qui font sens.'],
     code: ['f(x)', 'Des variables, une logique commune.\nL’idée devient un outil qui fonctionne.'],
