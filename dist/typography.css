@@ -52,6 +52,7 @@
 .project-heading { min-width: 0; }
 .project-number { flex-shrink: 0; }
 .section-heading > p { max-width: 360px; }
+.hero-description strong { font-family: var(--display); font-weight: 600; }
 .about-copy > p:not(.about-intro) { max-width: 520px; }
 .timeline p { max-width: 230px; }
 footer { flex-wrap: wrap; }
@@ -137,6 +138,9 @@ footer { flex-wrap: wrap; }
   .hero-footer { gap: 20px; flex-wrap: wrap; }
   .hero-footer > .micro { max-width: 45%; }
 }
+@media (min-width: 901px) and (max-width: 1100px) {
+  .hero h1 { font-size: clamp(72px, 8.35vw, 86px); }
+}
 @media (max-width: 900px) {
   .hero-grid { grid-template-columns: 1fr; }
   .hero-copy { padding-bottom: 0; }
@@ -159,6 +163,7 @@ footer { flex-wrap: wrap; }
   .preview-canvas { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
 }
 @media (max-width: 700px) {
+  .hero h1 { font-size: clamp(50px, 15.4vw, 100px); }
   .brand-name .wordmark-caption { display: block; max-width: none; font-size: var(--text-caption); }
   .wordmark { gap: 10px; }
   .site-header { padding: 0 20px; gap: 12px; }
