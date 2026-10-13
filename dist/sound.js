@@ -1,17 +1,18 @@
-/* A small original synthesized demonstration, never autoplayed. */
+import { createInstrument, DEFAULT_PATTERN, DEFAULT_TEMPO, DEFAULT_TONE, DEFAULT_VOLUME } from './sound-engine.js';
+
+/* The audio clock drives playback; the animation only follows it. Never autoplay. */
 (() => {
   'use strict';
   const root = document.querySelector('.sound-playground');
   if (!root) return;
   const $ = selector => root.querySelector(selector);
   const steps = [...root.querySelectorAll('[data-step]')];
-  const initial = [true, false, true, true, false, false, true, false];
-  const pitches = [110, 164.81, 130.81, 220, 146.83, 164.81, 196, 130.81];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  let pattern = [...initial], tempo = 120, audio, master;
+  let pattern = [...DEFAULT_PATTERN], tempo = DEFAULT_TEMPO;
+  let tone = DEFAULT_TONE, volume = DEFAULT_VOLUME, audio, instrument;
   let playing = false, starting = false, generation = 0;
   let timer = 0, frame = 0, nextTime = 0, nextStep = 0;
-  const voices = new Set(), queue = [];
+  const queue = [];
   const status = text => { $('#sound-status').textContent = text; };
   function draw() {
     steps.forEach((button, i) => button.setAttribute('aria-pressed', String(pattern[i])));
@@ -29,51 +30,28 @@
     $('#sound-toggle span:last-child').textContent = playing ? 'Arrêter le motif' : 'Écouter le motif';
   }
   function stop(message = 'À l’arrêt. Votre motif reste en place.') {
-    generation++;
-    starting = false;
-    playing = false;
+    generation++; starting = false; playing = false;
     clearInterval(timer); timer = 0;
-    cancelAnimationFrame(frame); frame = 0;
-    queue.length = 0;
-    if (audio && master) {
-      master.gain.cancelScheduledValues(audio.currentTime);
-      master.gain.setTargetAtTime(0, audio.currentTime, .012);
-      for (const voice of voices) {
-        try { voice.stop(audio.currentTime + .045); } catch (_) { /* Already ended. */ }
-      }
+    cancelAnimationFrame(frame); frame = 0; queue.length = 0;
+    if (instrument) {
+      const retired = instrument; instrument = null;
+      retired.stop(); setTimeout(() => retired.dispose(), 110);
     }
     steps.forEach(button => button.classList.remove('is-current'));
-    updateButton();
-    status(message);
-  }
-  function note(index, when) {
-    const oscillator = audio.createOscillator();
-    const envelope = audio.createGain();
-    const filter = audio.createBiquadFilter();
-    oscillator.type = 'triangle';
-    oscillator.frequency.setValueAtTime(pitches[index], when);
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1500, when);
-    filter.frequency.exponentialRampToValueAtTime(260, when + .24);
-    filter.Q.value = .6;
-    envelope.gain.setValueAtTime(0, when);
-    envelope.gain.linearRampToValueAtTime(.5, when + .008);
-    envelope.gain.exponentialRampToValueAtTime(.001, when + .27);
-    oscillator.connect(filter).connect(envelope).connect(master);
-    voices.add(oscillator);
-    oscillator.onended = () => { voices.delete(oscillator); oscillator.disconnect(); filter.disconnect(); envelope.disconnect(); };
-    oscillator.start(when);
-    oscillator.stop(when + .29);
+    updateButton(); status(message);
   }
   function schedule() {
     if (!playing) return;
     if (audio.state !== 'running') { stop('Lecture interrompue. Relancez le motif quand vous voulez.'); return; }
-    // Skip missed beats after a stalled tab; never stack a burst of old notes.
-    if (nextTime < audio.currentTime - .1) nextTime = audio.currentTime + .025;
-    while (nextTime < audio.currentTime + .08) {
-      if (pattern[nextStep]) note(nextStep, nextTime);
-      queue.push({step:nextStep, time:nextTime});
-      nextTime += 60 / tempo / 2;
+    // Never catch up with a burst after a stalled tab: resume on a clean downbeat.
+    if (nextTime < audio.currentTime - 0.1) {
+      nextTime = audio.currentTime + 0.025; nextStep = 0; queue.length = 0;
+    }
+    while (nextTime < audio.currentTime + 0.08) {
+      instrument.step(nextStep, nextTime, pattern);
+      queue.push({ step: nextStep, time: nextTime });
+      // A restrained 54% swing; quarter-note kicks remain evenly spaced.
+      nextTime += 60 / tempo / 2 * (nextStep % 2 ? 0.92 : 1.08);
       nextStep = (nextStep + 1) % steps.length;
     }
   }
@@ -89,36 +67,43 @@
     if (document.body.classList.contains('focus-mode')) { status('Le mode Focus garde le son en pause. Désactivez-le pour écouter.'); return; }
     const Context = window.AudioContext || window.webkitAudioContext;
     if (!Context) { status('Le son n’est pas disponible dans ce navigateur. Vous pouvez composer le motif visuel.'); return; }
-    const request = ++generation;
-    starting = true;
+    const request = ++generation; starting = true;
     try {
-      if (!audio) { audio = new Context(); master = audio.createGain(); master.gain.value = 0; master.connect(audio.destination); }
+      if (!audio) audio = new Context();
       await audio.resume();
-      if (request !== generation || document.hidden || document.body.classList.contains('focus-mode')) { starting = false; return; }
+      if (request !== generation) return;
+      if (document.hidden || document.body.classList.contains('focus-mode')) { starting = false; return; }
       if (audio.state !== 'running') throw new Error('Audio unavailable');
-      starting = false;
-      playing = true;
-      master.gain.cancelScheduledValues(audio.currentTime);
-      master.gain.setValueAtTime(0, audio.currentTime);
-      master.gain.linearRampToValueAtTime(.22, audio.currentTime + .035);
-      nextStep = 0; nextTime = audio.currentTime + .05;
-      updateButton();
-      status('Lecture du motif synthétique. Chaque case active joue une note.');
+      instrument = createInstrument(audio, { tempo, tone, volume });
+      instrument.output.connect(audio.destination); instrument.start();
+      starting = false; playing = true; nextStep = 0; nextTime = audio.currentTime + 0.05;
+      updateButton(); status('Basse acid, accents et glissés. Ouvrez le timbre pour plus de mordant.');
       schedule(); timer = setInterval(schedule, 25); frame = requestAnimationFrame(animate);
-    } catch (_) { stop('Lecture indisponible. Vous pouvez toujours composer le motif visuel.'); }
+    } catch (_) { if (request === generation) stop('Lecture indisponible. Vous pouvez toujours composer le motif visuel.'); }
   });
   steps.forEach((button, i) => button.addEventListener('click', () => {
     pattern[i] = !pattern[i]; draw();
-    status(pattern.some(Boolean) ? `Pas ${i + 1} ${pattern[i] ? 'activé' : 'désactivé'}. Le motif se recompose.` : 'Tous les pas sont coupés. Activez une note pour retrouver le son.');
+    status(pattern.some(Boolean) ? `Pas ${i + 1} ${pattern[i] ? 'activé' : 'désactivé'}. Le motif se recompose.` : 'Tous les pas sont coupés. L’écho s’efface. Activez un pas pour retrouver le son.');
   }));
   $('#sound-tempo').addEventListener('input', event => {
-    tempo = Number(event.target.value);
-    $('#tempo-value').textContent = `${tempo} BPM`;
+    tempo = Number(event.target.value); $('#tempo-value').textContent = `${tempo} BPM`;
+    instrument?.setTempo(tempo);
+  });
+  $('#sound-tone').addEventListener('input', event => {
+    tone = Number(event.target.value) / 100; instrument?.setTone(tone);
+    $('#tone-value').textContent = tone < 0.34 ? 'Rond' : tone < 0.67 ? 'Acid' : 'Incisif';
+    event.target.setAttribute('aria-valuetext', $('#tone-value').textContent);
+  });
+  $('#sound-volume').addEventListener('input', event => {
+    volume = Number(event.target.value) / 100; instrument?.setVolume(volume);
+    $('#volume-value').textContent = `${Math.round(volume * 100)} %`;
   });
   $('#sound-reset').addEventListener('click', () => {
-    stop('Motif et tempo réinitialisés. Prêt pour une nouvelle composition.');
-    pattern = [...initial]; tempo = 120;
-    $('#sound-tempo').value = tempo; $('#tempo-value').textContent = `${tempo} BPM`; draw();
+    stop('Motif, tempo et timbre réinitialisés. Votre volume est conservé.');
+    pattern = [...DEFAULT_PATTERN]; tempo = DEFAULT_TEMPO; tone = DEFAULT_TONE;
+    $('#sound-tempo').value = tempo; $('#tempo-value').textContent = `${tempo} BPM`;
+    $('#sound-tone').value = tone * 100; $('#tone-value').textContent = 'Acid';
+    $('#sound-tone').setAttribute('aria-valuetext', 'Acid'); draw();
   });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { stop('Lecture en pause. Relancez le motif quand vous voulez.'); if (audio) audio.suspend().catch(() => {}); }
@@ -126,7 +111,7 @@
   window.addEventListener('pagehide', () => { stop(); if (audio) audio.suspend().catch(() => {}); });
   new MutationObserver(() => {
     if (document.body.classList.contains('focus-mode')) stop('Mode Focus : le son est en pause.');
-  }).observe(document.body, {attributes:true, attributeFilter:['class']});
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   new IntersectionObserver(entries => {
     if (!entries[0].isIntersecting && (playing || starting)) stop('Lecture en pause. Votre motif reste en place.');
   }).observe(root);
