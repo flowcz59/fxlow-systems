@@ -74,6 +74,8 @@ Les actions sont épinglées sur des commits précis. Le job de test peut seulem
 
 Le domaine canonique est `fxlow.systems`. Son raccordement demande les enregistrements OVH suivants :
 
+Tant que ces DNS pointent vers l’ancien hébergement Sites, les push publient sur GitHub Pages mais ne changent pas le contenu servi par `fxlow.systems`. La bascule DNS est une opération unique, indépendante des push suivants.
+
 | Nom | Type | Cible |
 | --- | --- | --- |
 | `@` | `A` | `185.199.108.153` |
