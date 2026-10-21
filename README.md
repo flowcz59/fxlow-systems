@@ -31,7 +31,8 @@ Ouvrir `http://127.0.0.1:4317/`. Utiliser un serveur HTTP, plutôt que d’ouvri
 | `dist/assets/` | Polices, CV PDF, favicon et aperçus de partage |
 | `assets-source/` | Source HTML de l’aperçu de partage |
 | `tests/` | Vérifications du mode Focus, des contrôles audio et du rendu audio hors ligne |
-| `.openai/hosting.json` | Identifiant du site existant et dossier statique à publier |
+| `.github/workflows/deploy.yml` | Tests et déploiement automatique GitHub Pages |
+| `.openai/hosting.json` | Configuration conservée de l’hébergement Sites précédent |
 
 `dist/` contient les sources servies directement : il est versionné et se modifie sans compilation. Le son démarre uniquement après une action du visiteur. Le mode Focus garde la lecture silencieuse et mémorise l’étape sur l’appareil.
 
@@ -61,11 +62,29 @@ Les polices DM Sans et Space Grotesk sont distribuées sous SIL Open Font Licens
 
 ## Publication
 
-Le site est actuellement hébergé par **Sites**, avec le domaine `fxlow.systems`. Le dépôt conserve la configuration de ce site existant.
+Chaque push sur **`main`** déclenche le workflow [Test and deploy portfolio](https://github.com/flowcz59/fxlow-systems/actions/workflows/deploy.yml) :
 
-Un push GitHub sauvegarde les sources et leur historique. Il ne déclenche pas de publication : aucun déploiement automatique GitHub n’est configuré. La publication reste une étape distincte via Sites.
+1. Installation des dépendances de test et de Chromium.
+2. Vérification du mode Focus et du moteur audio.
+3. Publication de `dist/` sur **GitHub Pages**, uniquement si les tests réussissent.
 
-Pour un autre hébergement statique, servir le contenu de `dist/`. La migration du domaine et de l’hébergement doit être configurée séparément.
+Les pull requests lancent les tests sans publier. Il est aussi possible de relancer le workflow depuis l’onglet **Actions**. Un échec de test laisse en ligne le dernier déploiement réussi.
+
+Les actions sont épinglées sur des commits précis. Le job de test peut seulement lire le dépôt ; le job de publication reçoit les permissions Pages/OIDC nécessaires. Aucun jeton personnel ni secret d’hébergement n’est requis dans le dépôt.
+
+Le domaine canonique est `fxlow.systems`. Son raccordement demande les enregistrements OVH suivants :
+
+| Nom | Type | Cible |
+| --- | --- | --- |
+| `@` | `A` | `185.199.108.153` |
+| `@` | `A` | `185.199.109.153` |
+| `@` | `A` | `185.199.110.153` |
+| `@` | `A` | `185.199.111.153` |
+| `www` | `CNAME` | `flowcz59.github.io.` |
+
+Les entrées de messagerie restent indépendantes. Voir la [documentation GitHub sur les domaines personnalisés](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
+
+La configuration Sites précédente est conservée pour référence. Les publications courantes passent par GitHub Actions.
 
 ## Version de départ
 
