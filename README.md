@@ -37,15 +37,27 @@ Ouvrir `http://127.0.0.1:4317/`. Utiliser un serveur HTTP, plutôt que d’ouvri
 
 ## Vérifications
 
-Les scripts existants utilisent Node.js, le paquet `playwright` et Chromium. Les tests navigateur attendent le serveur local sur le port 4317 ; `TEST_URL` permet de choisir une autre adresse.
+Les scripts utilisent Node.js, Playwright et Chromium. Installer les dépendances de test :
 
 ```sh
-node tests/focus-browser.cjs
-node tests/sound-browser.cjs
-node tests/sound-offline.cjs
+npm ci
+npx playwright install chromium
 ```
 
-Si Chromium se trouve dans un emplacement particulier, renseigner `PLAYWRIGHT_CHROMIUM_EXECUTABLE` avec son chemin. Les captures et rendus produits par les tests sont écrits dans les dossiers indiqués par les scripts, en dehors de `dist/`.
+Avec le serveur local démarré dans un autre terminal, lancer les trois suites :
+
+```sh
+npm test
+```
+
+Les tests attendent le serveur sur le port 4317 ; `TEST_URL` permet de choisir une autre adresse. Si Chromium se trouve dans un emplacement particulier, renseigner `PLAYWRIGHT_CHROMIUM_EXECUTABLE` avec son chemin. Les captures, rapports et rendus audio sont écrits dans `.qa/`, ignoré par Git.
+
+## Polices
+
+Les polices DM Sans et Space Grotesk sont distribuées sous SIL Open Font License 1.1. Leurs notices sont conservées dans `dist/assets/licenses/`, à côté des fichiers distribués.
+
+- [DM Sans — licence et auteurs](https://github.com/google/fonts/blob/main/ofl/dmsans/OFL.txt)
+- [Space Grotesk — licence et auteurs](https://github.com/google/fonts/blob/main/ofl/spacegrotesk/OFL.txt)
 
 ## Publication
 
@@ -58,3 +70,5 @@ Pour un autre hébergement statique, servir le contenu de `dist/`. La migration 
 ## Version de départ
 
 Cette copie reprend la version publiée **12**, issue du commit `6a2923f58c315d39a06ec0f5c643199e0f01488c`, avec l’historique de développement et le CV servi par le site.
+
+Dans cette copie publique, les adresses d’auteur et de committer utilisent l’adresse masquée GitHub du propriétaire. Des renseignements personnels retirés du site actuel ont également été supprimés des anciennes versions. Les identifiants des commits diffèrent donc de ceux du dépôt d’hébergement ; le code de la version publiée de départ reste identique.

@@ -8,7 +8,7 @@ const fs = require('node:fs');
   const url = process.env.TEST_URL || 'http://127.0.0.1:4317/';
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  const dir = '../tmp/focus'; fs.mkdirSync(dir, {recursive:true});
+  const dir = process.env.FOCUS_QA_DIR || '.qa/focus'; fs.mkdirSync(dir, {recursive:true});
   const start = async () => { await page.goto(url); await page.evaluate(() => document.fonts.ready); };
   const stage = () => page.locator('#focus-chapter').inputValue();
   const isFocus = () => page.locator('#focus-toggle').getAttribute('aria-pressed');

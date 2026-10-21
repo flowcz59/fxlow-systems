@@ -51,8 +51,10 @@ const assert=require('node:assert/strict');
     const m=result.metrics;reports.push(m);
     assert.equal(m.nonfinite,0,`${spec.name}: finite audio`);assert.ok(m.peak<.75,`${spec.name}: output headroom ${m.peak}`);assert.ok(Math.abs(m.dc)<.002,`${spec.name}: DC offset`);assert.ok(m.tail<.00001,`${spec.name}: clean stop ${m.tail}`);
     if(spec.empty||spec.volume===0)assert.ok(m.peak<.00001,`${spec.name}: should be silent`);else assert.ok(m.rms>.005,`${spec.name}: audible mix`);
-    if(result.wav){const dest=process.env.AUDIO_PREVIEW_PATH||path.resolve('../output/audio/fxlow-acid-preview.wav');fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,Buffer.from(result.wav,'base64'));}
+    if(result.wav){const dest=process.env.AUDIO_PREVIEW_PATH||path.resolve('.qa/audio/fxlow-acid-preview.wav');fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,Buffer.from(result.wav,'base64'));}
   }
-  fs.writeFileSync(process.env.AUDIO_REPORT_PATH||path.resolve('../tmp/audio/offline-report.json'),JSON.stringify(reports,null,2));
+  const report=process.env.AUDIO_REPORT_PATH||path.resolve('.qa/audio/offline-report.json');
+  fs.mkdirSync(path.dirname(report),{recursive:true});
+  fs.writeFileSync(report,JSON.stringify(reports,null,2));
   console.log(JSON.stringify(reports));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -35,7 +35,7 @@ const fs=require('node:fs');
  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'))});await page.waitForTimeout(150);assert.equal(await page.locator('#sound-toggle').getAttribute('aria-pressed'),'false');
  await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'))});assert.equal(await page.locator('#sound-toggle').getAttribute('aria-pressed'),'false','Returning to a tab never auto-resumes');
  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#sound-toggle').click();await page.waitForTimeout(200);assert.equal(await page.locator('.sound-steps .is-current').count(),0);await page.locator('#sound-toggle').click();await page.locator('#sound-reset').click();
- const dir=process.env.AUDIO_QA_DIR||'../tmp/audio';fs.mkdirSync(dir,{recursive:true});
+ const dir=process.env.AUDIO_QA_DIR||'.qa/audio';fs.mkdirSync(dir,{recursive:true});
  for(const width of [1440,768,390,320]){
   await page.setViewportSize({width,height:1000});await page.locator('.sound-playground').scrollIntoViewIfNeeded();
   const layout=await page.evaluate(()=>({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,clipped:[...document.querySelectorAll('.sound-playground input,.sound-playground label,.sound-playground output')].filter(e=>{const r=e.getBoundingClientRect();return r.x<0||r.right>innerWidth}).length}));assert.equal(layout.overflow,false,JSON.stringify(layout));assert.equal(layout.clipped,0,JSON.stringify(layout));

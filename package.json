@@ -1,0 +1,13 @@
+{
+  "name": "fxlow-systems",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FXLOW — portfolio de Florian Cazé, Design System Expert",
+  "scripts": {
+    "dev": "python3 -m http.server 4317 --bind 127.0.0.1 --directory dist",
+    "test": "node tests/focus-browser.cjs && node tests/sound-browser.cjs && node tests/sound-offline.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
